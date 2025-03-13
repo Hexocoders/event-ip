@@ -1,48 +1,43 @@
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
+import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import type { Event, ApiResponse } from '@/types';
 
-export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+interface RouteParams {
+  params: {
+    id: string;
+  };
+}
+
+export async function GET(req: Request, { params }: RouteParams) {
   try {
-    // Fetch event details with images
-    const eventResults = await db.query(
-      `SELECT e.*, ei.id as image_id, ei.image_url
-       FROM events e
-       LEFT JOIN event_images ei ON e.id = ei.event_id
-       WHERE e.id = ?`,
-      [params.id]
-    ) as any[];
+    const supabase = createRouteHandlerClient({ cookies });
+    
+    const { data: event, error } = await supabase
+      .from('events')
+      .select('*')
+      .eq('id', params.id)
+      .single();
 
-    if (!eventResults || eventResults.length === 0) {
-      return NextResponse.json(
-        { error: 'Event not found' },
-        { status: 404 }
-      );
+    if (error) {
+      const response: ApiResponse<null> = {
+        error: 'Event not found',
+        status: 404
+      };
+      return NextResponse.json(response, { status: 404 });
     }
 
-    // Process results to combine event data with images
-    const event = {
-      ...eventResults[0],
-      images: eventResults
-        .filter(row => row.image_url)
-        .map(row => ({
-          id: row.image_id,
-          image_url: row.image_url
-        }))
+    const response: ApiResponse<Event> = {
+      data: event,
+      status: 200
     };
 
-    // Remove duplicate fields from the main event object
-    delete event.image_id;
-    delete event.image_url;
-
-    return NextResponse.json(event);
+    return NextResponse.json(response);
   } catch (error) {
-    console.error('Error fetching event:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch event details' },
-      { status: 500 }
-    );
+    const response: ApiResponse<null> = {
+      error: error instanceof Error ? error.message : 'An unexpected error occurred',
+      status: 500
+    };
+    return NextResponse.json(response, { status: 500 });
   }
 } 
