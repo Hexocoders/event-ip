@@ -2,9 +2,6 @@ import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import type { Event, ApiResponse } from '@/types';
-import { db } from '@/lib/db';
-import { writeFile } from 'fs/promises';
-import path from 'path';
 
 interface CreateEventRequest {
   title: string;
@@ -75,4 +72,4 @@ export async function POST(req: Request) {
     };
     return NextResponse.json(response, { status: 500 });
   }
-} 
+}
