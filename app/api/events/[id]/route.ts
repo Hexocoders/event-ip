@@ -3,16 +3,10 @@ import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import type { Event, ApiResponse } from '@/types';
 
-interface RouteParams {
-  params: {
-    id: string;
-  };
-}
-
-export async function GET(req: Request, { params }: RouteParams) {
+export async function GET(req: Request, { params }: { params: { id: string } }) {
   try {
     const supabase = createRouteHandlerClient({ cookies });
-    
+
     const { data: event, error } = await supabase
       .from('events')
       .select('*')
@@ -33,14 +27,14 @@ export async function GET(req: Request, { params }: RouteParams) {
     };
 
     return NextResponse.json(response);
-  } catch (error: unknown) {  // Explicitly type `error`
+  } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
-    
+
     const response: ApiResponse<null> = {
       error: errorMessage,
       status: 500
     };
-    
+
     return NextResponse.json(response, { status: 500 });
   }
 }
