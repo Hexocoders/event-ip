@@ -1,108 +1,71 @@
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
+import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/db';
-import { auth } from '@/lib/auth';
+import type { DashboardStats, ApiResponse } from '@/types';
 
-export async function GET(req: Request) {
+export async function GET() {
   try {
-    const user = await auth();
-    if (!user) {
-      return NextResponse.json(
-        { error: 'Please log in to view dashboard' },
-        { status: 401 }
-      );
+    const supabase = createRouteHandlerClient({ cookies });
+
+    // Get total events count
+    const { count: totalEvents, error: eventsError } = await supabase
+      .from('events')
+      .select('*', { count: 'exact' });
+
+    if (eventsError) {
+      throw new Error('Failed to fetch total events');
     }
 
-    // Get total revenue and tickets sold
-    const salesStats = await db.query(
-      `SELECT 
-        COALESCE(SUM(t.price), 0) as total_revenue,
-        COUNT(t.id) as total_tickets_sold
-       FROM events e
-       LEFT JOIN tickets t ON e.id = t.event_id
-       WHERE e.user_id = ?`,
-      [user.id]
-    ) as any[];
+    // Get upcoming events count
+    const { count: upcomingEvents, error: upcomingError } = await supabase
+      .from('events')
+      .select('*', { count: 'exact' })
+      .gte('date', new Date().toISOString());
 
-    // Get event views and shares
-    const eventStats = await db.query(
-      `SELECT 
-        COUNT(DISTINCT e.id) as total_events,
-        COALESCE(SUM(e.views), 0) as total_views,
-        COALESCE(SUM(e.shares), 0) as total_shares
-       FROM events e
-       WHERE e.user_id = ?`,
-      [user.id]
-    ) as any[];
+    if (upcomingError) {
+      throw new Error('Failed to fetch upcoming events');
+    }
 
-    // Get recent events with sales data
-    const events = await db.query(
-      `SELECT 
-        e.id,
-        e.title,
-        e.date,
-        e.capacity as totalCapacity,
-        COUNT(DISTINCT t.id) as ticketsSold,
-        COALESCE(SUM(t.price), 0) as revenue
-       FROM events e
-       LEFT JOIN tickets t ON e.id = t.event_id
-       WHERE e.user_id = ?
-       GROUP BY e.id
-       ORDER BY e.date ASC`,
-      [user.id]
-    ) as any[];
+    // Get total teams count
+    const { count: totalTeams, error: teamsError } = await supabase
+      .from('teams')
+      .select('*', { count: 'exact' });
 
-    // Get recent purchases
-    const purchases = await db.query(
-      `SELECT 
-        t.code,
-        u.full_name as buyer,
-        t.purchase_date,
-        COUNT(t.id) as ticketsSold,
-        SUM(t.price) as totalPrice,
-        e.title as eventTitle
-       FROM tickets t
-       JOIN events e ON t.event_id = e.id
-       JOIN users u ON t.user_id = u.id
-       WHERE e.user_id = ?
-       GROUP BY t.code
-       ORDER BY t.purchase_date DESC
-       LIMIT 5`,
-      [user.id]
-    ) as any[];
+    if (teamsError) {
+      throw new Error('Failed to fetch total teams');
+    }
 
-    return NextResponse.json({
-      stats: {
-        revenue: salesStats[0].total_revenue || 0,
-        ticketsSold: salesStats[0].total_tickets_sold || 0,
-        eventViews: eventStats[0].total_views || 0,
-        eventShares: eventStats[0].total_shares || 0,
-      },
-      events: events.map(event => ({
-        ...event,
-        timeUntil: getTimeUntil(new Date(event.date))
-      })),
-      purchases: purchases.map(purchase => ({
-        ...purchase,
-        date: new Date(purchase.purchase_date).toLocaleDateString(),
-        time: new Date(purchase.purchase_date).toLocaleTimeString(),
-      }))
-    });
+    // Get active teams (teams with events in the last 30 days)
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const { count: activeTeams, error: activeTeamsError } = await supabase
+      .from('teams')
+      .select('*', { count: 'exact' })
+      .gte('created_at', thirtyDaysAgo.toISOString());
+
+    if (activeTeamsError) {
+      throw new Error('Failed to fetch active teams');
+    }
+
+    const stats: DashboardStats = {
+      totalEvents: totalEvents || 0,
+      upcomingEvents: upcomingEvents || 0,
+      totalTeams: totalTeams || 0,
+      activeTeams: activeTeams || 0
+    };
+
+    const response: ApiResponse<DashboardStats> = {
+      data: stats,
+      status: 200
+    };
+
+    return NextResponse.json(response);
   } catch (error) {
-    console.error('Dashboard stats error:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch dashboard statistics' },
-      { status: 500 }
-    );
+    const errorResponse: ApiResponse<null> = {
+      error: error instanceof Error ? error.message : 'An unexpected error occurred',
+      status: 500
+    };
+    return NextResponse.json(errorResponse, { status: 500 });
   }
-}
-
-function getTimeUntil(date: Date): string {
-  const now = new Date();
-  const diffTime = date.getTime() - now.getTime();
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  
-  if (diffDays <= 7) return `in ${diffDays} days`;
-  if (diffDays <= 14) return 'Next 2 weeks';
-  if (diffDays <= 30) return 'Next month';
-  return 'Future event';
 } 
