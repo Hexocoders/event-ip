@@ -51,74 +51,74 @@ export default function DashboardPage() {
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        // Get the current session
-        const { data: { session } } = await supabase.auth.getSession();
+        setLoading(true);
         
-        // Fetch events data
-        const { data: eventsData, error: eventsError } = await supabase
+        // Fetch all data in a single query using joins
+        const { data: eventsWithStats, error: eventsError } = await supabase
           .from('events')
           .select(`
             id,
             title,
             date,
             capacity,
-            price,
             views,
-            shares
-          `);
-        // Remove the user_id filter to show all events
+            shares,
+            tickets (
+              id,
+              price,
+              purchase_date,
+              user_id
+            )
+          `)
+          .limit(10); // Limit to 10 most recent events for initial load
         
         if (eventsError) throw eventsError;
 
-        // Fetch tickets data
-        const { data: ticketsData, error: ticketsError } = await supabase
-          .from('tickets')
-          .select(`
-            code,
-            price,
-            purchase_date,
-            event_id,
-            user_id
-          `);
-        // Remove the user_id filter to show all tickets
-
-        if (ticketsError) throw ticketsError;
-
-        // Calculate stats
+        // Process the joined data efficiently
         const calculatedStats = {
-          revenue: ticketsData?.reduce((sum, ticket) => sum + (ticket.price || 0), 0) || 0,
-          ticketsSold: ticketsData?.length || 0,
-          eventViews: eventsData?.reduce((sum, event) => sum + (event.views || 0), 0) || 0,
-          eventShares: eventsData?.reduce((sum, event) => sum + (event.shares || 0), 0) || 0,
+          revenue: 0,
+          ticketsSold: 0,
+          eventViews: 0,
+          eventShares: 0,
         };
 
-        // Format events data
-        const formattedEvents = eventsData?.map(event => ({
-          id: event.id,
-          title: event.title,
-          date: event.date,
-          ticketsSold: ticketsData?.filter(t => t.event_id === event.id).length || 0,
-          totalCapacity: event.capacity,
-          revenue: ticketsData
-            ?.filter(t => t.event_id === event.id)
-            .reduce((sum, ticket) => sum + (ticket.price || 0), 0) || 0,
-          timeUntil: getTimeUntil(event.date),
-        })) || [];
+        const formattedEvents = eventsWithStats?.map(event => {
+          const eventTickets = event.tickets || [];
+          const eventRevenue = eventTickets.reduce((sum, ticket) => sum + (ticket.price || 0), 0);
+          
+          // Update stats while processing events
+          calculatedStats.revenue += eventRevenue;
+          calculatedStats.ticketsSold += eventTickets.length;
+          calculatedStats.eventViews += event.views || 0;
+          calculatedStats.eventShares += event.shares || 0;
 
-        // Format purchases data
-        const formattedPurchases = ticketsData?.map(ticket => ({
-          code: ticket.code,
-          buyer: 'Anonymous', // You might want to fetch user details here
-          date: new Date(ticket.purchase_date).toLocaleDateString(),
-          time: new Date(ticket.purchase_date).toLocaleTimeString(),
-          ticketsSold: 1,
-          totalPrice: ticket.price,
-          eventTitle: eventsData?.find(e => e.id === ticket.event_id)?.title || 'Unknown Event',
-        })) || [];
+          return {
+            id: event.id,
+            title: event.title,
+            date: event.date,
+            ticketsSold: eventTickets.length,
+            totalCapacity: event.capacity,
+            revenue: eventRevenue,
+            timeUntil: getTimeUntil(event.date),
+          };
+        }) || [];
+
+        // Format recent purchases from the same data
+        const recentPurchases = eventsWithStats?.flatMap(event => 
+          (event.tickets || []).map(ticket => ({
+            code: ticket.id,
+            buyer: 'Anonymous',
+            date: new Date(ticket.purchase_date).toLocaleDateString(),
+            time: new Date(ticket.purchase_date).toLocaleTimeString(),
+            ticketsSold: 1,
+            totalPrice: ticket.price,
+            eventTitle: event.title,
+          }))
+        ).slice(0, 5) || []; // Only show 5 most recent purchases
 
         setStats(calculatedStats);
         setEvents(formattedEvents);
-        setPurchases(formattedPurchases);
+        setPurchases(recentPurchases);
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
         setError(error instanceof Error ? error.message : 'Failed to load dashboard data');
@@ -128,7 +128,17 @@ export default function DashboardPage() {
     };
 
     fetchDashboardData();
-  }, [router, supabase]);
+
+    // Set up real-time subscription for updates
+    const eventsSubscription = supabase
+      .channel('events-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'events' }, fetchDashboardData)
+      .subscribe();
+
+    return () => {
+      eventsSubscription.unsubscribe();
+    };
+  }, [supabase]);
 
   const getTimeUntil = (date: string) => {
     const eventDate = new Date(date);

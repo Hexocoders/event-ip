@@ -1,7 +1,4 @@
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
-
+const config = {
   eslint: {
     // Warning: This allows production builds to successfully complete even if
     // your project has ESLint errors.
@@ -9,9 +6,17 @@ const nextConfig: NextConfig = {
   },
   typescript: {
     // Warning: This allows production builds to successfully complete even if
-    // your project has TypeScript errors.
+    // your project has type errors.
     ignoreBuildErrors: true,
   },
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**'
+      }
+    ]
+  }
 };
 
-export default nextConfig;
+export default config;

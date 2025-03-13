@@ -37,4 +37,29 @@ export async function signOut() {
   if (error) throw error;
 }
 
-export const auth = supabase.auth; 
+export const auth = supabase.auth;
+
+export const verifyToken = async (token: string) => {
+  try {
+    const { data: { user }, error } = await supabase.auth.getUser(token);
+    if (error) throw error;
+    return { userId: user.id };
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getUserById = async (id: string) => {
+  try {
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', id)
+      .single();
+    
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    throw error;
+  }
+}; 

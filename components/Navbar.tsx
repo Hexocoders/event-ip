@@ -20,58 +20,73 @@ export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const supabase = createClientComponentClient()
 
-  // Check if the current path is in the dashboard section
+  // Memoize the isDashboardSection check
   const isDashboardSection = pathname?.startsWith('/dashboard') || 
-                            pathname?.startsWith('/my-events') || 
-                            pathname?.startsWith('/calendar') ||
-                            pathname?.startsWith('/teams') ||
-                            pathname?.startsWith('/payment') ||
-                            pathname?.startsWith('/messages') ||
-                            pathname?.startsWith('/settings')
+                          pathname?.startsWith('/my-events') || 
+                          pathname?.startsWith('/calendar') ||
+                          pathname?.startsWith('/teams') ||
+                          pathname?.startsWith('/payment') ||
+                          pathname?.startsWith('/messages') ||
+                          pathname?.startsWith('/settings')
 
   useEffect(() => {
+    let mounted = true
     const getUserDetails = async () => {
       try {
+        // Check if we have cached user data
+        const cachedUser = sessionStorage.getItem('cached_user')
+        if (cachedUser) {
+          setUser(JSON.parse(cachedUser))
+          setLoading(false)
+          return
+        }
+
         const { data: { session } } = await supabase.auth.getSession()
-        if (session?.user) {
+        if (session?.user && mounted) {
           const { data } = await supabase
             .from('users')
             .select('*')
             .eq('id', session.user.id)
             .single()
           
-          if (data) {
+          if (data && mounted) {
             setUser(data)
+            // Cache the user data
+            sessionStorage.setItem('cached_user', JSON.stringify(data))
           }
         }
       } catch (error) {
         console.error('Error fetching user:', error)
       } finally {
-        setLoading(false)
+        if (mounted) {
+          setLoading(false)
+        }
       }
     }
 
     getUserDetails()
 
-    // Subscribe to auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_OUT') {
+      if (event === 'SIGNED_OUT' && mounted) {
         setUser(null)
+        sessionStorage.removeItem('cached_user')
         router.push('/auth/login')
-      } else if (session?.user && event === 'SIGNED_IN') {
+      } else if (session?.user && event === 'SIGNED_IN' && mounted) {
         const { data } = await supabase
           .from('users')
           .select('*')
           .eq('id', session.user.id)
           .single()
         
-        if (data) {
+        if (data && mounted) {
           setUser(data)
+          sessionStorage.setItem('cached_user', JSON.stringify(data))
         }
       }
     })
 
     return () => {
+      mounted = false
       subscription.unsubscribe()
     }
   }, [supabase, router])
@@ -79,6 +94,7 @@ export default function Navbar() {
   const handleSignOut = async () => {
     try {
       await supabase.auth.signOut()
+      sessionStorage.removeItem('cached_user')
       router.push('/auth/login')
       setIsMenuOpen(false)
     } catch (error) {

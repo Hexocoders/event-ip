@@ -40,7 +40,7 @@ const FEATURED_EVENTS: Event[] = [
     location: 'New York, NY',
     price: 40,
     tier: 'gold',
-    image: '/images/image-22.png'
+    image: '/images/urbanmarathon.png'
   },
   {
     id: '3',
@@ -51,7 +51,7 @@ const FEATURED_EVENTS: Event[] = [
     location: 'New York, NY',
     price: 122,
     tier: 'platinum',
-    image: '/images/image-21.png'
+    image: '/images/urbanmarathon.png'
   }
 ];
 
@@ -65,7 +65,7 @@ const UPCOMING_EVENTS: Event[] = [
     location: 'New York, NY',
     price: 100,
     tier: 'platinum',
-    image: '/images/image-16.png'
+    image: '/images/image16.png'
   },
   {
     id: '5',
@@ -76,7 +76,7 @@ const UPCOMING_EVENTS: Event[] = [
     location: 'Atlanta',
     price: 50,
     tier: 'gold',
-    image: '/images/image-17.png'
+    image: '/images/image17.png'
   }
 ];
 
@@ -90,7 +90,7 @@ const MORE_EVENTS: Event[] = [
     location: 'New York, NY',
     price: 115,
     tier: 'silver',
-    image: '/images/image-25.png'
+    image: '/images/image25.png'
   },
   {
     id: '7',
@@ -101,7 +101,7 @@ const MORE_EVENTS: Event[] = [
     location: 'New York, NY',
     price: 175,
     tier: 'platinum',
-    image: '/images/image-24.png'
+    image: '/images/image24.png'
   },
   {
     id: '8',
@@ -112,7 +112,7 @@ const MORE_EVENTS: Event[] = [
     location: 'New York, NY',
     price: 90,
     tier: 'gold',
-    image: '/images/image-23.png'
+    image: '/images/image23.png'
   }
 ];
 

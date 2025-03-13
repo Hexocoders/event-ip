@@ -1,9 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { FiUserPlus, FiMail, FiMoreVertical, FiTrash2 } from 'react-icons/fi';
 import Sidebar from '@/components/Sidebar';
-import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 
 interface TeamMember {
@@ -15,95 +14,60 @@ interface TeamMember {
   joined_date: string;
 }
 
+// Static team members data
+const staticTeamMembers: TeamMember[] = [
+  {
+    id: '1',
+    name: 'John Doe',
+    email: 'john@example.com',
+    role: 'Event Manager',
+    status: 'active',
+    joined_date: '2024-01-15',
+  },
+  {
+    id: '2',
+    name: 'Jane Smith',
+    email: 'jane@example.com',
+    role: 'Admin',
+    status: 'active',
+    joined_date: '2024-02-01',
+  },
+  {
+    id: '3',
+    name: 'Mike Johnson',
+    email: 'mike@example.com',
+    role: 'Support',
+    status: 'active',
+    joined_date: '2024-03-10',
+  },
+];
+
 export default function TeamsPage() {
-  const router = useRouter();
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [newMemberEmail, setNewMemberEmail] = useState('');
   const [newMemberRole, setNewMemberRole] = useState('Event Manager');
-  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>(staticTeamMembers);
 
-  useEffect(() => {
-    fetchTeamMembers();
-  }, []);
+  const handleInvite = () => {
+    const newMember: TeamMember = {
+      id: (teamMembers.length + 1).toString(),
+      name: '',
+      email: newMemberEmail,
+      role: newMemberRole,
+      status: 'pending',
+      joined_date: new Date().toISOString().split('T')[0],
+    };
 
-  const fetchTeamMembers = async () => {
-    try {
-      const response = await fetch('/api/teams');
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch team members');
-      }
-
-      const data = await response.json();
-      setTeamMembers(data.teamMembers);
-    } catch (error) {
-      console.error('Error fetching team members:', error);
-      toast.error('Failed to load team members');
-    } finally {
-      setLoading(false);
-    }
+    setTeamMembers([...teamMembers, newMember]);
+    setNewMemberEmail('');
+    setShowInviteModal(false);
+    toast.success('Team member invited successfully');
   };
 
-  const handleInvite = async () => {
-    try {
-      const response = await fetch('/api/teams', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: newMemberEmail,
-          role: newMemberRole,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to invite team member');
-      }
-
-      toast.success('Team member invited successfully');
-      setNewMemberEmail('');
-      setShowInviteModal(false);
-      fetchTeamMembers();
-    } catch (error) {
-      console.error('Error inviting team member:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to invite team member');
-    }
+  const handleRemoveMember = (memberId: string) => {
+    setTeamMembers(teamMembers.filter(member => member.id !== memberId));
+    toast.success('Team member removed successfully');
   };
-
-  const handleRemoveMember = async (memberId: string) => {
-    try {
-      const response = await fetch(`/api/teams?id=${memberId}`, {
-        method: 'DELETE'
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to remove team member');
-      }
-
-      toast.success('Team member removed successfully');
-      fetchTeamMembers();
-    } catch (error) {
-      console.error('Error removing team member:', error);
-      toast.error('Failed to remove team member');
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <Sidebar />
-        <div className="pl-64 pt-16">
-          <div className="p-6 max-w-7xl mx-auto flex items-center justify-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-pink-500"></div>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gray-50">
