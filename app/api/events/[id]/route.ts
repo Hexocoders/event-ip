@@ -3,14 +3,17 @@ import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import type { Event, ApiResponse } from '@/types';
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(
+  request: Request,
+  context: { params: { id: string } }
+) {
   try {
     const supabase = createRouteHandlerClient({ cookies });
 
     const { data: event, error } = await supabase
       .from('events')
       .select('*')
-      .eq('id', params.id)
+      .eq('id', context.params.id)
       .single();
 
     if (error) {
