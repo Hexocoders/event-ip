@@ -33,11 +33,14 @@ export async function GET(req: Request, { params }: RouteParams) {
     };
 
     return NextResponse.json(response);
-  } catch (error) {
+  } catch (error: unknown) {  // Explicitly type `error`
+    const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
+    
     const response: ApiResponse<null> = {
-      error: error instanceof Error ? error.message : 'An unexpected error occurred',
+      error: errorMessage,
       status: 500
     };
+    
     return NextResponse.json(response, { status: 500 });
   }
-} 
+}

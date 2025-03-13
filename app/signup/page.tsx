@@ -7,6 +7,7 @@ import { FcGoogle } from 'react-icons/fc'
 import { FaFacebook } from 'react-icons/fa'
 import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
+import { AuthError } from '@supabase/supabase-js'
 
 export default function SignUp() {
   const router = useRouter()
@@ -25,7 +26,7 @@ export default function SignUp() {
 
     try {
       // Sign up the user
-      const { data: authData, error: authError } = await supabase.auth.signUp({
+      const { error: authError } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -42,8 +43,12 @@ export default function SignUp() {
 
       // After successful signup, redirect to onboarding
       router.push('/onboarding')
-    } catch (error: any) {
-      setError(error.message)
+    } catch (error) {
+      if (error instanceof AuthError) {
+        setError(error.message)
+      } else {
+        setError('An unexpected error occurred')
+      }
     } finally {
       setLoading(false)
     }
@@ -51,29 +56,37 @@ export default function SignUp() {
 
   const handleGoogleSignUp = async () => {
     try {
-      const { data, error } = await supabase.auth.signInWithOAuth({
+      const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: `${window.location.origin}/auth/callback`
         }
       })
       if (error) throw error
-    } catch (error: any) {
-      setError(error.message)
+    } catch (error) {
+      if (error instanceof AuthError) {
+        setError(error.message)
+      } else {
+        setError('An unexpected error occurred')
+      }
     }
   }
 
   const handleFacebookSignUp = async () => {
     try {
-      const { data, error } = await supabase.auth.signInWithOAuth({
+      const { error } = await supabase.auth.signInWithOAuth({
         provider: 'facebook',
         options: {
           redirectTo: `${window.location.origin}/auth/callback`
         }
       })
       if (error) throw error
-    } catch (error: any) {
-      setError(error.message)
+    } catch (error) {
+      if (error instanceof AuthError) {
+        setError(error.message)
+      } else {
+        setError('An unexpected error occurred')
+      }
     }
   }
 
@@ -217,4 +230,4 @@ export default function SignUp() {
       </div>
     </div>
   )
-} 
+}

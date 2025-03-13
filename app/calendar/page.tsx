@@ -26,33 +26,17 @@ export default function CalendarPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchEvents = () => {
+    const fetchEvents = async () => {
       try {
-        const storedEvents = JSON.parse(localStorage.getItem('events') || '[]');
-        
-        // Process events to determine their status
-        const processedEvents = storedEvents.map((event: Event) => {
-          const eventDate = new Date(event.date);
-          const today = new Date();
-          let status: 'upcoming' | 'past' | 'draft';
-
-          if (eventDate < today) {
-            status = 'past';
-          } else {
-            status = 'upcoming';
-          }
-
-          return {
-            ...event,
-            status,
-            tickets_sold: event.tickets_sold || 0
-          };
-        });
-
-        setEvents(processedEvents);
-      } catch (error) {
-        console.error('Error fetching events:', error);
-        setError('Failed to load events');
+        const response = await fetch('/api/events/my-events');
+        if (!response.ok) {
+          throw new Error('Failed to fetch events');
+        }
+        const data = await response.json();
+        setEvents(data);
+      } catch (err) {
+        console.error('Error fetching events:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load events');
       } finally {
         setLoading(false);
       }
@@ -91,6 +75,21 @@ export default function CalendarPage() {
         <div className="pl-64 pt-16">
           <div className="p-6 max-w-7xl mx-auto flex items-center justify-center">
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-pink-500"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Sidebar />
+        <div className="pl-64 pt-16">
+          <div className="p-6 max-w-7xl mx-auto">
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+              {error}
+            </div>
           </div>
         </div>
       </div>
@@ -137,7 +136,7 @@ export default function CalendarPage() {
               ))}
 
               {/* Calendar days */}
-              {daysInMonth.map((date, index) => {
+              {daysInMonth.map((date) => {
                 const dayEvents = getEventsForDate(date);
                 return (
                   <div
@@ -179,4 +178,4 @@ export default function CalendarPage() {
       </div>
     </div>
   );
-} 
+}

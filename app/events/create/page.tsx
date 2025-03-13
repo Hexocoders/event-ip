@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { FiUpload, FiX } from 'react-icons/fi';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
+import Image from 'next/image';
 
 interface ImagePreview {
   file: File;
@@ -116,7 +117,7 @@ export default function CreateEvent() {
               <div className="grid grid-cols-3 gap-4">
                 {images.map((image, index) => (
                   <div key={index} className="relative group">
-                    <img
+                    <Image
                       src={image.url}
                       alt={`Event preview ${index + 1}`}
                       className="h-32 w-full object-cover rounded-lg"

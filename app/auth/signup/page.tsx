@@ -57,8 +57,9 @@ export default function SignUpPage() {
       }
 
       router.push('/auth/login?message=Account created successfully! Please log in.');
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {  // Explicitly typing the error
+      const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -66,7 +67,7 @@ export default function SignUpPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#f8e7ed] px-4">
-      <div className="max-w-md w-full bg-white rounded-lg p-8">
+      <div className="max-w-md w-full bg-white rounded-lg p-8 relative">
         <button
           className="absolute right-4 top-4 text-gray-400 hover:text-gray-500"
           onClick={() => router.push('/')}
@@ -179,4 +180,4 @@ export default function SignUpPage() {
       </div>
     </div>
   );
-} 
+}

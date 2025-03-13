@@ -6,6 +6,7 @@ import EventCard from '../components/EventCard'
 import Hero from '../components/Hero'
 import { FiCalendar, FiMapPin, FiArrowRight } from 'react-icons/fi'
 import Link from 'next/link'
+import Image from 'next/image';
 
 interface Event {
   id: string;
@@ -194,7 +195,7 @@ export default function Home() {
           <div className="relative overflow-hidden rounded-2xl bg-gray-900">
             {/* Background Image */}
             <div className="relative h-[500px]">
-              <img 
+              <Image 
                 src="/images/Image 19.png" 
                 alt="Brushstrokes & Beyond: Art Exhibition" 
                 className="w-full h-full object-cover opacity-80"

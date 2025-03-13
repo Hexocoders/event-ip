@@ -119,9 +119,9 @@ export default function DashboardPage() {
         setStats(calculatedStats);
         setEvents(formattedEvents);
         setPurchases(recentPurchases);
-      } catch (error) {
-        console.error('Error fetching dashboard data:', error);
-        setError(error instanceof Error ? error.message : 'Failed to load dashboard data');
+      } catch (err) {
+        console.error('Error fetching dashboard data:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load dashboard data');
       } finally {
         setLoading(false);
       }
@@ -160,6 +160,21 @@ export default function DashboardPage() {
         <div className="pl-64 pt-16">
           <div className="p-6 max-w-7xl mx-auto flex items-center justify-center">
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-pink-500"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Sidebar />
+        <div className="pl-64 pt-16">
+          <div className="p-6 max-w-7xl mx-auto">
+            <div className="bg-red-50 p-4 rounded-lg text-red-700">
+              {error}
+            </div>
           </div>
         </div>
       </div>

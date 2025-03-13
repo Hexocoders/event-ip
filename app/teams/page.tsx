@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { FiUserPlus, FiMail, FiMoreVertical, FiTrash2 } from 'react-icons/fi';
+import { FiUserPlus, FiMail, FiTrash2 } from 'react-icons/fi';
 import Sidebar from '@/components/Sidebar';
 import { toast } from 'react-hot-toast';
 
@@ -208,4 +208,4 @@ export default function TeamsPage() {
       )}
     </div>
   );
-} 
+}

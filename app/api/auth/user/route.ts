@@ -14,7 +14,7 @@ export async function GET(request: Request) {
     }
 
     // Verify token and get user ID
-    const { userId } = verifyToken(token);
+    const { userId } = await verifyToken(token);
 
     // Get user data
     const user = await getUserById(userId);
@@ -27,11 +27,12 @@ export async function GET(request: Request) {
     }
 
     return NextResponse.json({ user }, { status: 200 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Get user error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Internal server error';
     return NextResponse.json(
-      { message: error.message || 'Internal server error' },
-      { status: error.message === 'Invalid token' ? 401 : 500 }
+      { message: errorMessage },
+      { status: errorMessage === 'Invalid token' ? 401 : 500 }
     );
   }
-} 
+}

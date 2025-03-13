@@ -1,12 +1,14 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/db';
-import { auth } from '@/lib/auth';
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
+import { cookies } from 'next/headers';
 
-export async function GET(req: Request) {
+export async function GET() {
   try {
-    // Verify user authentication
-    const user = await auth();
-    if (!user) {
+    // Get authenticated user from Supabase
+    const supabase = createRouteHandlerClient({ cookies });
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) {
       console.log('Authentication failed: No user found');
       return NextResponse.json(
         { error: 'Please log in to view your events' },
@@ -17,34 +19,38 @@ export async function GET(req: Request) {
     console.log('Authenticated user:', user.id);
 
     // First, fetch the events
-    const events = await db.query(
-      `SELECT 
-        e.*,
-        COUNT(DISTINCT t.id) as tickets_sold
-       FROM events e
-       LEFT JOIN tickets t ON e.id = t.event_id
-       WHERE e.user_id = ?
-       GROUP BY e.id
-       ORDER BY e.date DESC`,
-      [user.id]
-    ) as any[];
+    const { data: events, error: eventsError } = await supabase
+      .from('events')
+      .select(`
+        *,
+        tickets(count)
+      `)
+      .eq('user_id', user.id)
+      .order('date', { ascending: false });
+
+    if (eventsError) {
+      throw eventsError;
+    }
 
     // Then, fetch images for all events
     const eventIds = events.map(event => event.id);
-    let images = [];
+    let images: { event_id: string; id: string; image_url: string }[] = [];
     
     if (eventIds.length > 0) {
-      images = await db.query(
-        `SELECT event_id, id, image_url
-         FROM event_images
-         WHERE event_id IN (?)`,
-        [eventIds]
-      ) as any[];
+      const { data: eventImages, error: imagesError } = await supabase
+        .from('event_images')
+        .select('event_id, id, image_url')
+        .in('event_id', eventIds);
+
+      if (!imagesError && eventImages) {
+        images = eventImages;
+      }
     }
 
     // Combine events with their images
     const processedEvents = events.map(event => ({
       ...event,
+      tickets_sold: event.tickets?.[0]?.count || 0,
       images: images.filter(img => img.event_id === event.id).map(img => ({
         id: img.id,
         image_url: img.image_url
@@ -60,4 +66,4 @@ export async function GET(req: Request) {
       { status: 500 }
     );
   }
-} 
+}

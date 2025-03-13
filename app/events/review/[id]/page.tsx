@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { FiArrowLeft, FiHeart, FiCalendar, FiMapPin } from 'react-icons/fi';
 import { format } from 'date-fns';
 import { toast } from 'react-hot-toast';
+import Image from 'next/image';
 
 interface EventData {
   id: string;
@@ -149,7 +150,7 @@ export default function ReviewEvent({ params }: { params: { id: string } }) {
           <div className="bg-white rounded-lg shadow-lg overflow-hidden">
             {eventData.images && eventData.images[0] && (
               <div className="relative h-64 w-full">
-                <img
+                <Image
                   src={eventData.images[0].url}
                   alt={eventData.title}
                   className="w-full h-full object-cover"

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
-import { FaCalendar, FaClock, FaMapMarkerAlt, FaTicketAlt } from 'react-icons/fa';
+import { FaCalendar, FaClock, FaMapMarkerAlt } from 'react-icons/fa';
 
 interface Event {
   id: string;
@@ -20,8 +20,6 @@ interface EventCardProps {
   event?: Event;
   highlight?: 'week' | 'hot';
 }
-
-const DEFAULT_IMAGE = '/images/event-default.jpg';
 
 // Define tier background colors instead of images
 const TIER_COLORS = {
@@ -46,7 +44,7 @@ export default function EventCard({ event, highlight }: EventCardProps) {
         month: 'short',
         day: 'numeric'
       });
-    } catch (error) {
+    } catch {
       return 'Invalid date';
     }
   };
@@ -60,7 +58,7 @@ export default function EventCard({ event, highlight }: EventCardProps) {
         hour: 'numeric',
         minute: '2-digit'
       });
-    } catch (error) {
+    } catch {
       return 'Invalid time';
     }
   };

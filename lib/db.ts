@@ -10,9 +10,34 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
+interface EventData {
+  title: string;
+  description: string;
+  date: string;
+  location: string;
+  user_id: string;
+  price?: number;
+  capacity?: number;
+  category?: string;
+}
+
+interface EventImage {
+  event_id: string;
+  image_url: string;
+  alt_text?: string;
+}
+
+interface Ticket {
+  event_id: string;
+  user_id: string;
+  quantity: number;
+  total_price: number;
+  status: 'pending' | 'confirmed' | 'cancelled';
+}
+
 export const db = {
   // Events
-  createEvent: async (eventData: any) => {
+  createEvent: async (eventData: EventData) => {
     const { data, error } = await supabase
       .from('events')
       .insert(eventData)
@@ -44,7 +69,7 @@ export const db = {
   },
 
   // Event Images
-  addEventImage: async (imageData: any) => {
+  addEventImage: async (imageData: EventImage) => {
     const { data, error } = await supabase
       .from('event_images')
       .insert(imageData)
@@ -56,7 +81,7 @@ export const db = {
   },
 
   // Tickets
-  createTicket: async (ticketData: any) => {
+  createTicket: async (ticketData: Ticket) => {
     const { data, error } = await supabase
       .from('tickets')
       .insert(ticketData)

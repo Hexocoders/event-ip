@@ -8,6 +8,7 @@ interface TicketInfo {
   name: string;
   email: string;
   status: string;
+  qr_code: string;
 }
 
 export default function QRScanner() {
@@ -58,6 +59,7 @@ export default function QRScanner() {
             name: ticket.name || 'N/A',
             email: userData.email,
             status: ticket.status,
+            qr_code: ticket.qr_code
           });
 
           // Clear any previous errors
@@ -130,4 +132,4 @@ export default function QRScanner() {
       )}
     </div>
   );
-} 
+}

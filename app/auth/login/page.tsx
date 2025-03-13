@@ -11,7 +11,6 @@ export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const message = searchParams.get('message');
-  const redirectPath = searchParams.get('redirect') || '/dashboard';
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -21,17 +20,17 @@ export default function LoginPage() {
 
   const handleResendConfirmation = async () => {
     try {
-      const { error } = await supabase.auth.resend({
+      const { error: resendError } = await supabase.auth.resend({
         type: 'signup',
         email: email,
       });
 
-      if (error) {
-        setError(error.message);
+      if (resendError) {
+        setError(resendError.message);
       } else {
         setIsEmailConfirmationSent(true);
       }
-    } catch (err) {
+    } catch {
       setError('Failed to resend confirmation email');
     }
   };
@@ -72,9 +71,9 @@ export default function LoginPage() {
         }
 
         // Redirect to dashboard after successful login
-        window.location.href = 'http://localhost:3000/dashboard';
+        router.push('/dashboard');
       }
-    } catch (err) {
+    } catch {
       setError('An error occurred during login');
     } finally {
       setLoading(false);
@@ -93,7 +92,7 @@ export default function LoginPage() {
       if (error) {
         setError(error.message);
       }
-    } catch (err) {
+    } catch {
       setError('An error occurred with OAuth sign in');
     }
   };
@@ -215,7 +214,7 @@ export default function LoginPage() {
 
           <div className="mt-6 text-center">
             <Link href="/auth/signup" className="text-sm text-blue-600 hover:text-blue-700">
-              Don't have an account? Sign up
+              Don&apos;t have an account? Sign up
             </Link>
           </div>
         </form>

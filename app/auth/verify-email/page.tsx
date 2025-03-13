@@ -13,14 +13,14 @@ export default function VerifyEmailPage() {
           </div>
           <h2 className="text-3xl font-bold text-gray-900">Check your email</h2>
           <p className="mt-2 text-sm text-gray-600">
-            We've sent you a verification link to your email address.
+            We&apos;ve sent you a verification link to your email address.
             Please click the link to verify your account.
           </p>
         </div>
 
         <div className="mt-8 space-y-4">
           <p className="text-sm text-gray-500">
-            Didn't receive the email? Check your spam folder or
+            Didn&apos;t receive the email? Check your spam folder or
           </p>
           <Link
             href="/auth/signup"
@@ -41,4 +41,4 @@ export default function VerifyEmailPage() {
       </div>
     </div>
   );
-} 
+}
