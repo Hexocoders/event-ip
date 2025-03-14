@@ -1,5 +1,3 @@
-'use server';
-
 import { FiCalendar, FiMapPin, FiPhone } from 'react-icons/fi';
 import { format } from 'date-fns';
 import Image from 'next/image';
