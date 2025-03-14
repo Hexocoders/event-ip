@@ -7,21 +7,26 @@ interface EventImage {
   image_url: string;
 }
 
-export async function GET(
-  request: NextRequest,
-  context: { params: { id: string } }
-) {
+interface Context {
+  params: {
+    id: string;
+  };
+}
+
+export async function GET(request: NextRequest, context: Context) {
   try {
     const supabase = createRouteHandlerClient({ cookies });
 
     // Fetch the event with its images
     const { data: event, error: eventError } = await supabase
       .from('events')
-      .select(`
+      .select(
+        `
         *,
         tickets(count),
         event_images(id, image_url)
-      `)
+      `
+      )
       .eq('id', context.params.id)
       .single();
 
@@ -30,20 +35,18 @@ export async function GET(
     }
 
     if (!event) {
-      return NextResponse.json(
-        { error: 'Event not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Event not found' }, { status: 404 });
     }
 
     // Process the event data
     const processedEvent = {
       ...event,
       tickets_sold: event.tickets?.[0]?.count || 0,
-      images: event.event_images?.map((img: EventImage) => ({
-        id: img.id,
-        image_url: img.image_url
-      })) || []
+      images:
+        event.event_images?.map((img: EventImage) => ({
+          id: img.id,
+          image_url: img.image_url,
+        })) || [],
     };
 
     return NextResponse.json(processedEvent);
@@ -54,4 +57,4 @@ export async function GET(
       { status: 500 }
     );
   }
-} 
+}
