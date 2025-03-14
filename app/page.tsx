@@ -196,9 +196,11 @@ export default function Home() {
             {/* Background Image */}
             <div className="relative h-[500px]">
               <Image 
-                src="/images/Image 19.png" 
+                src="/images/Image19.png" 
                 alt="Brushstrokes & Beyond: Art Exhibition" 
                 className="w-full h-full object-cover opacity-80"
+                width={1000}
+                height={1000}
               />
               <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent" />
             </div>
