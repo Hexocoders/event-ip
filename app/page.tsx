@@ -4,7 +4,7 @@ import SearchBar from '../components/SearchBar'
 import Categories from '../components/Categories'
 import EventCard from '../components/EventCard'
 import Hero from '../components/Hero'
-import { FiCalendar, FiMapPin, FiArrowRight } from 'react-icons/fi'
+import { FiCalendar, FiMapPin } from 'react-icons/fi'
 import Image from 'next/image';
 
 interface Event {
