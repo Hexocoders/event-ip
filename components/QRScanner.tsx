@@ -19,13 +19,17 @@ export default function QRScanner() {
 
   useEffect(() => {
     if (!scannerInitialized) {
-      const scanner = new Html5QrcodeScanner('reader', {
-        qrbox: {
-          width: 250,
-          height: 250,
+      const scanner = new Html5QrcodeScanner(
+        'reader',
+        {
+          qrbox: {
+            width: 250,
+            height: 250,
+          },
+          fps: 5,
         },
-        fps: 5,
-      });
+        false // verbose flag
+      );
 
       scanner.render(async (decodedText) => {
         try {
@@ -81,7 +85,7 @@ export default function QRScanner() {
     <div className="max-w-lg mx-auto p-4">
       <h2 className="text-2xl font-bold mb-4">Scan Ticket QR Code</h2>
       
-      <div id="qr-reader" className="mb-4"></div>
+      <div id="reader" className="mb-4"></div>
 
       {error && (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
