@@ -7,13 +7,10 @@ interface EventImage {
   image_url: string;
 }
 
-interface Context {
-  params: {
-    id: string;
-  };
-}
-
-export async function GET(request: NextRequest, context: Context) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
   try {
     const supabase = createRouteHandlerClient({ cookies });
 
@@ -27,7 +24,7 @@ export async function GET(request: NextRequest, context: Context) {
         event_images(id, image_url)
       `
       )
-      .eq('id', context.params.id)
+      .eq('id', params.id)
       .single();
 
     if (eventError) {
