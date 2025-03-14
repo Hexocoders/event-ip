@@ -2,11 +2,20 @@ import { NextResponse, NextRequest } from 'next/server';
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
 
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
+    // Get authentication token from request header
+    const token = request.headers.get('authorization')?.split(' ')[1];
+    if (!token) {
+      return NextResponse.json(
+        { error: 'No authentication token provided' },
+        { status: 401 }
+      );
+    }
+
     // Get authenticated user from Supabase
     const supabase = createRouteHandlerClient({ cookies });
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
 
     if (authError || !user) {
       console.log('Authentication failed: No user found');
