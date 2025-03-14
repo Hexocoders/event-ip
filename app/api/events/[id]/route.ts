@@ -9,9 +9,10 @@ interface EventImage {
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: any // Use "context" directly
 ) {
   try {
+    const { params } = context; // Extract params inside the function
     const supabase = createRouteHandlerClient({ cookies });
 
     // Fetch the event with its images
