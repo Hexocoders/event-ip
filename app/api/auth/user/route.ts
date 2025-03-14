@@ -1,7 +1,7 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { verifyToken, getUserById } from '@/lib/auth';
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   try {
     // Get token from Authorization header
     const token = request.headers.get('authorization')?.split(' ')[1];

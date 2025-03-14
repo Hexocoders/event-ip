@@ -1,6 +1,6 @@
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import type { Event, ApiResponse } from '@/types';
 
 interface CreateEventRequest {
@@ -12,7 +12,7 @@ interface CreateEventRequest {
   is_private: boolean;
 }
 
-export async function POST(req: Request) {
+export async function POST(request: NextRequest) {
   try {
     const supabase = createRouteHandlerClient({ cookies });
     
@@ -27,7 +27,7 @@ export async function POST(req: Request) {
       return NextResponse.json(response, { status: 401 });
     }
 
-    const body: CreateEventRequest = await req.json();
+    const body: CreateEventRequest = await request.json();
     
     // Validate required fields
     const requiredFields = ['title', 'description', 'date', 'location'];
