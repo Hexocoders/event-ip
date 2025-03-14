@@ -9,7 +9,7 @@ interface EventImage {
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
     const supabase = createRouteHandlerClient({ cookies });
@@ -22,7 +22,7 @@ export async function GET(
         tickets(count),
         event_images(id, image_url)
       `)
-      .eq('id', params.id)
+      .eq('id', context.params.id)
       .single();
 
     if (eventError) {
