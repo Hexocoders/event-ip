@@ -1,60 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
 
-interface EventImage {
-  id: string;
-  image_url: string;
-}
-
-interface Context {
-  params: {
-    id: string;
+export async function GET(
+  request: NextRequest,
+  context: { params: { id: string } }
+) {
+  // Return static event data
+  const staticEvent = {
+    id: context.params.id,
+    title: "Sample Event",
+    description: "This is a sample event description",
+    date: "2024-06-01",
+    time: "18:00",
+    location: "New York, NY",
+    price: 50,
+    tickets_sold: 0,
+    images: [
+      {
+        id: "1",
+        image_url: "/images/event1.jpg"
+      }
+    ]
   };
-}
 
-export async function GET(request: NextRequest, context: Context) {
-  try {
-    const supabase = createRouteHandlerClient({ cookies });
-
-    // Fetch the event with its images
-    const { data: event, error: eventError } = await supabase
-      .from('events')
-      .select(
-        `
-        *,
-        tickets(count),
-        event_images(id, image_url)
-      `
-      )
-      .eq('id', context.params.id)
-      .single();
-
-    if (eventError) {
-      throw eventError;
-    }
-
-    if (!event) {
-      return NextResponse.json({ error: 'Event not found' }, { status: 404 });
-    }
-
-    // Process the event data
-    const processedEvent = {
-      ...event,
-      tickets_sold: event.tickets?.[0]?.count || 0,
-      images:
-        event.event_images?.map((img: EventImage) => ({
-          id: img.id,
-          image_url: img.image_url,
-        })) || [],
-    };
-
-    return NextResponse.json(processedEvent);
-  } catch (error) {
-    console.error('Error fetching event:', error);
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Failed to fetch event' },
-      { status: 500 }
-    );
-  }
+  return NextResponse.json(staticEvent);
 }

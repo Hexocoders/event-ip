@@ -1,78 +1,41 @@
 import { NextResponse, NextRequest } from 'next/server';
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
 
 export async function GET(request: NextRequest) {
-  try {
-    // Get authentication token from request header
-    const token = request.headers.get('authorization')?.split(' ')[1];
-    if (!token) {
-      return NextResponse.json(
-        { error: 'No authentication token provided' },
-        { status: 401 }
-      );
+  // Return static events data
+  const staticEvents = [
+    {
+      id: "1",
+      title: "Sample Event 1",
+      description: "This is a sample event description",
+      date: "2024-06-01",
+      time: "18:00",
+      location: "New York, NY",
+      price: 50,
+      tickets_sold: 0,
+      images: [
+        {
+          id: "1",
+          image_url: "/images/event1.jpg"
+        }
+      ]
+    },
+    {
+      id: "2",
+      title: "Sample Event 2",
+      description: "Another sample event description",
+      date: "2024-06-15",
+      time: "19:00",
+      location: "Los Angeles, CA",
+      price: 75,
+      tickets_sold: 0,
+      images: [
+        {
+          id: "2",
+          image_url: "/images/event2.jpg"
+        }
+      ]
     }
+  ];
 
-    // Get authenticated user from Supabase
-    const supabase = createRouteHandlerClient({ cookies });
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-
-    if (authError || !user) {
-      console.log('Authentication failed: No user found');
-      return NextResponse.json(
-        { error: 'Please log in to view your events' },
-        { status: 401 }
-      );
-    }
-
-    console.log('Authenticated user:', user.id);
-
-    // First, fetch the events
-    const { data: events, error: eventsError } = await supabase
-      .from('events')
-      .select(`
-        *,
-        tickets(count)
-      `)
-      .eq('user_id', user.id)
-      .order('date', { ascending: false });
-
-    if (eventsError) {
-      throw eventsError;
-    }
-
-    // Then, fetch images for all events
-    const eventIds = events.map(event => event.id);
-    let images: { event_id: string; id: string; image_url: string }[] = [];
-    
-    if (eventIds.length > 0) {
-      const { data: eventImages, error: imagesError } = await supabase
-        .from('event_images')
-        .select('event_id, id, image_url')
-        .in('event_id', eventIds);
-
-      if (!imagesError && eventImages) {
-        images = eventImages;
-      }
-    }
-
-    // Combine events with their images
-    const processedEvents = events.map(event => ({
-      ...event,
-      tickets_sold: event.tickets?.[0]?.count || 0,
-      images: images.filter(img => img.event_id === event.id).map(img => ({
-        id: img.id,
-        image_url: img.image_url
-      }))
-    }));
-
-    console.log('Events fetched:', processedEvents.length);
-    return NextResponse.json(processedEvents);
-  } catch (error) {
-    console.error('Error in /api/events/my-events:', error);
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Failed to fetch events' },
-      { status: 500 }
-    );
-  }
+  return NextResponse.json(staticEvents);
 }
