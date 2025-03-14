@@ -43,6 +43,7 @@ export const verifyToken = async (token: string) => {
   try {
     const { data: { user }, error } = await supabase.auth.getUser(token);
     if (error) throw error;
+    if (!user) throw new Error('User not found');
     return { userId: user.id };
   } catch (error) {
     throw error;
