@@ -19,57 +19,32 @@ export default function QRScanner() {
 
   useEffect(() => {
     if (!scannerInitialized) {
-      const scanner = new Html5QrcodeScanner(
-        'qr-reader',
-        { fps: 10, qrbox: 250 },
-        /* verbose= */ false
-      );
+      const scanner = new Html5QrcodeScanner('reader', {
+        qrbox: {
+          width: 250,
+          height: 250,
+        },
+        fps: 5,
+      });
 
       scanner.render(async (decodedText) => {
         try {
-          // Verify the ticket in the database
-          const { data: ticket, error: ticketError } = await supabase
+          const { data: ticketData, error } = await supabase
             .from('tickets')
-            .select('*, events(title)')
+            .select('*')
             .eq('qr_code', decodedText)
             .single();
 
-          if (ticketError) throw ticketError;
-
-          if (!ticket) {
-            setError('Invalid ticket');
-            return;
-          }
-
-          if (ticket.status === 'used') {
-            setError('Ticket has already been used');
-            return;
-          }
-
-          // Get user information
-          const { data: userData, error: userError } = await supabase
-            .from('auth.users')
-            .select('email')
-            .eq('id', ticket.user_id)
-            .single();
-
-          if (userError) throw userError;
-
-          setTicketInfo({
-            name: ticket.name || 'N/A',
-            email: userData.email,
-            status: ticket.status,
-            qr_code: ticket.qr_code
-          });
-
-          // Clear any previous errors
-          setError(null);
-        } catch (err) {
-          setError('Error validating ticket');
-          console.error('Error:', err);
+          if (error) throw error;
+          setTicketInfo(ticketData);
+          scanner.clear();
+          setScannerInitialized(false);
+        } catch (error) {
+          console.error('Error fetching ticket:', error);
+          setError('Invalid QR code or ticket not found');
         }
       }, (error) => {
-        console.error('Scanner error:', error);
+        console.warn(`QR Code scanning failed: ${error}`);
       });
 
       setScannerInitialized(true);
@@ -78,7 +53,7 @@ export default function QRScanner() {
         scanner.clear();
       };
     }
-  }, [scannerInitialized]);
+  }, [scannerInitialized, supabase]);
 
   const handleAdmit = async () => {
     if (!ticketInfo) return;

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { FaGift, FaTrophy, FaTicketAlt } from 'react-icons/fa';
 
@@ -34,9 +34,9 @@ export default function RafflePrizes({ eventId }: RafflePrizesProps) {
 
   useEffect(() => {
     fetchPrizes();
-  }, [eventId]);
+  }, [eventId, fetchPrizes]);
 
-  const fetchPrizes = async () => {
+  const fetchPrizes = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('raffle_prizes')
@@ -66,7 +66,7 @@ export default function RafflePrizes({ eventId }: RafflePrizesProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [eventId, supabase]);
 
   const handleAddPrize = async () => {
     try {

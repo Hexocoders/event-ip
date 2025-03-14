@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { FaWhatsapp, FaEnvelope, FaTrash, FaLink } from 'react-icons/fa';
 
@@ -28,9 +28,9 @@ export default function PrivateEventInvites({ eventId }: PrivateEventInvitesProp
   useEffect(() => {
     fetchInvites();
     generateInviteLink();
-  }, [eventId]);
+  }, [eventId, fetchInvites, generateInviteLink]);
 
-  const fetchInvites = async () => {
+  const fetchInvites = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('private_event_invites')
@@ -45,13 +45,13 @@ export default function PrivateEventInvites({ eventId }: PrivateEventInvitesProp
     } finally {
       setLoading(false);
     }
-  };
+  }, [eventId, supabase]);
 
-  const generateInviteLink = async () => {
+  const generateInviteLink = useCallback(async () => {
     // Generate a unique link for the event that people can use to add themselves to the invite list
     const link = `${window.location.origin}/events/${eventId}/join`;
     setInviteLink(link);
-  };
+  }, [eventId]);
 
   const handleAddInvite = async () => {
     try {

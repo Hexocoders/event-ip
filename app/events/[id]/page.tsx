@@ -1,6 +1,6 @@
 'use server';
 
-import { FiHeart, FiCalendar, FiMapPin, FiShare2, FiPhone } from 'react-icons/fi';
+import { FiCalendar, FiMapPin, FiPhone } from 'react-icons/fi';
 import { format } from 'date-fns';
 import Image from 'next/image';
 
@@ -36,6 +36,9 @@ async function getEventData(eventId: string): Promise<EventData | null> {
     return null;
   }
 }
+
+export const dynamic = 'force-static';
+export const revalidate = 3600; // Revalidate every hour
 
 export default async function EventPage({ params }: { params: { id: string } }) {
   const eventData = await getEventData(params.id);

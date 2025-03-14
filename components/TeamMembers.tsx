@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { FaUserPlus, FaTrash } from 'react-icons/fa';
 
@@ -25,35 +25,27 @@ export default function TeamMembers({ eventId }: TeamMembersProps) {
 
   const supabase = createClientComponentClient();
 
-  useEffect(() => {
-    fetchTeamMembers();
-  }, [eventId]);
-
-  const fetchTeamMembers = async () => {
+  const fetchTeamMembers = useCallback(async () => {
     try {
       const { data: members, error: membersError } = await supabase
         .from('team_members')
-        .select(`
-          *,
-          user:user_id (
-            email
-          )
-        `)
+        .select('*')
         .eq('event_id', eventId);
 
       if (membersError) throw membersError;
-
-      setTeamMembers(members.map(member => ({
-        ...member,
-        email: member.user.email
-      })));
-    } catch (error) {
-      console.error('Error fetching team members:', error);
+      setTeamMembers(members || []);
+      setError(null);
+    } catch (err) {
+      console.error('Error fetching team members:', err);
       setError('Failed to load team members');
     } finally {
       setLoading(false);
     }
-  };
+  }, [eventId, supabase]);
+
+  useEffect(() => {
+    fetchTeamMembers();
+  }, [eventId, fetchTeamMembers]);
 
   const handleAddMember = async () => {
     try {
