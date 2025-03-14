@@ -65,7 +65,7 @@ const UPCOMING_EVENTS: Event[] = [
     location: 'New York, NY',
     price: 100,
     tier: 'platinum',
-    image: '/images/image16.png'
+    image: '/images/Image16.png'
   },
   {
     id: '5',
@@ -76,7 +76,7 @@ const UPCOMING_EVENTS: Event[] = [
     location: 'Atlanta',
     price: 50,
     tier: 'gold',
-    image: '/images/image17.png'
+    image: '/images/Image17.png'
   }
 ];
 
@@ -90,7 +90,7 @@ const MORE_EVENTS: Event[] = [
     location: 'New York, NY',
     price: 115,
     tier: 'silver',
-    image: '/images/image25.png'
+    image: '/images/Image25.png'
   },
   {
     id: '7',
@@ -101,7 +101,7 @@ const MORE_EVENTS: Event[] = [
     location: 'New York, NY',
     price: 175,
     tier: 'platinum',
-    image: '/images/image24.png'
+    image: '/images/Image24.png'
   },
   {
     id: '8',
@@ -112,7 +112,7 @@ const MORE_EVENTS: Event[] = [
     location: 'New York, NY',
     price: 90,
     tier: 'gold',
-    image: '/images/image23.png'
+    image: '/images/Image23.png'
   }
 ];
 
@@ -183,7 +183,7 @@ export default function Home() {
             {/* Background Image */}
             <div className="relative h-[500px]">
               <Image 
-                src="/images/Image19.png" 
+                src="/images/Image 19.png" 
                 alt="Brushstrokes & Beyond: Art Exhibition" 
                 className="w-full h-full object-cover opacity-80"
                 width={1000}
