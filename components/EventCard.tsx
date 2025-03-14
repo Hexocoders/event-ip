@@ -1,8 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { FiCalendar, FiMapPin } from 'react-icons/fi';
 import Image from 'next/image';
-import { FaCalendar, FaClock, FaMapMarkerAlt } from 'react-icons/fa';
 
 interface Event {
   id: string;
@@ -17,127 +16,51 @@ interface Event {
 }
 
 interface EventCardProps {
-  event?: Event;
-  highlight?: 'week' | 'hot';
+  event: Event;
 }
 
-// Define tier background colors instead of images
-const TIER_COLORS = {
-  silver: 'bg-gradient-to-r from-gray-400 to-gray-300',
-  gold: 'bg-gradient-to-r from-yellow-400 to-yellow-300',
-  platinum: 'bg-gradient-to-r from-gray-600 to-gray-500',
-};
-
-export default function EventCard({ event, highlight }: EventCardProps) {
-  const [imageError, setImageError] = useState(false);
-
-  // If no event is provided, return null or a placeholder
-  if (!event) {
-    return null;
-  }
-
-  const formatDate = (dateStr: string) => {
-    try {
-      const date = new Date(dateStr);
-      return date.toLocaleDateString('en-US', {
-        weekday: 'short',
-        month: 'short',
-        day: 'numeric'
-      });
-    } catch {
-      return 'Invalid date';
-    }
-  };
-
-  const formatTime = (timeStr: string) => {
-    try {
-      const [hours, minutes] = timeStr.split(':');
-      const date = new Date();
-      date.setHours(parseInt(hours), parseInt(minutes));
-      return date.toLocaleTimeString('en-US', {
-        hour: 'numeric',
-        minute: '2-digit'
-      });
-    } catch {
-      return 'Invalid time';
-    }
-  };
-
+export default function EventCard({ event }: EventCardProps) {
   return (
-    <div className={`bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 ${
-      highlight === 'week' ? 'border-2 border-blue-500' :
-      highlight === 'hot' ? 'border-2 border-red-500' : ''
-    }`}>
-      <div className="relative h-48">
-        {!imageError ? (
-          <Image
-            src={event.image}
-            alt={event.title}
-            fill
-            style={{ objectFit: 'cover', objectPosition: 'center' }}
-            onError={() => setImageError(true)}
-            priority
-            className="transition-opacity duration-300 hover:opacity-90"
-          />
-        ) : (
-          <div className={`w-full h-full ${event.tier ? TIER_COLORS[event.tier] : 'bg-gray-200'} flex items-center justify-center`}>
-            <span className="text-white text-lg font-bold">{event.title}</span>
-          </div>
-        )}
-        {highlight && (
-          <div className={`absolute top-2 right-2 px-3 py-1 rounded-full text-white text-sm font-bold ${
-            highlight === 'week' ? 'bg-blue-500' : 'bg-red-500'
-          }`}>
-            {highlight === 'week' ? 'This Week' : 'Hot 🔥'}
-          </div>
-        )}
+    <div className="group relative overflow-hidden rounded-xl bg-white shadow-md transition-all hover:shadow-lg">
+      {/* Image */}
+      <div className="relative h-48 w-full overflow-hidden">
+        <Image
+          src={event.image}
+          alt={event.title}
+          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110"
+          width={400}
+          height={300}
+        />
         {event.tier && (
-          <div className="absolute bottom-2 left-2 px-3 py-1 rounded-full text-white text-sm font-bold bg-black bg-opacity-50 backdrop-blur-sm capitalize">
-            {event.tier} Tier
+          <div className="absolute right-2 top-2">
+            <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium
+              ${event.tier === 'platinum' ? 'bg-purple-100 text-purple-800' :
+                event.tier === 'gold' ? 'bg-yellow-100 text-yellow-800' :
+                'bg-gray-100 text-gray-800'}`}>
+              {event.tier}
+            </span>
           </div>
         )}
       </div>
 
+      {/* Content */}
       <div className="p-4">
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="text-xl font-bold truncate">{event.title}</h3>
-        </div>
-
-        <p className="text-gray-600 text-sm mb-4 line-clamp-2">{event.description}</p>
-
-        <div className="space-y-2 text-sm text-gray-600">
-          <div className="flex items-center">
-            <FaCalendar className="mr-2" />
-            {formatDate(event.date)}
+        <h3 className="mb-2 text-lg font-semibold text-gray-900">{event.title}</h3>
+        <p className="mb-4 text-sm text-gray-600 line-clamp-2">{event.description}</p>
+        
+        <div className="space-y-2">
+          <div className="flex items-center text-sm text-gray-500">
+            <FiCalendar className="mr-2" />
+            <span>{new Date(event.date).toLocaleDateString()} | {event.time}</span>
           </div>
-          <div className="flex items-center">
-            <FaClock className="mr-2" />
-            {formatTime(event.time)}
-          </div>
-          <div className="flex items-center">
-            <FaMapMarkerAlt className="mr-2" />
-            <span className="truncate">{event.location}</span>
+          <div className="flex items-center text-sm text-gray-500">
+            <FiMapPin className="mr-2" />
+            <span>{event.location}</span>
           </div>
         </div>
 
         <div className="mt-4 flex items-center justify-between">
-          <div>
-            <span className="text-lg font-bold">
-              ${event.price}
-            </span>
-            {event.tier && (
-              <span className="ml-2 text-sm text-gray-500 capitalize">
-                {event.tier} tier
-              </span>
-            )}
-          </div>
-          
-          <button
-            className="px-3 py-1 rounded text-sm bg-purple-600 text-white hover:bg-purple-700 transition-colors"
-            onClick={() => window.location.href = `/events/${event.id}/tickets`}
-          >
-            Buy Tickets
-          </button>
+          <span className="text-lg font-bold text-purple-600">${event.price}</span>
         </div>
       </div>
     </div>

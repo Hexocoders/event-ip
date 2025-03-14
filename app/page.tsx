@@ -5,7 +5,6 @@ import Categories from '../components/Categories'
 import EventCard from '../components/EventCard'
 import Hero from '../components/Hero'
 import { FiCalendar, FiMapPin, FiArrowRight } from 'react-icons/fi'
-import Link from 'next/link'
 import Image from 'next/image';
 
 interface Event {
@@ -135,14 +134,10 @@ export default function Home() {
       <div className="mx-auto w-full max-w-7xl px-4 pt-24 pb-8">
         {/* New Events Section */}
         <section className="mb-16">
-          <div className="mb-8 flex items-center justify-between">
+          <div className="mb-8">
             <h2 className="text-3xl font-bold">
               New events in <span className="text-purple-600">NYC</span>
             </h2>
-            <Link href="/events" className="group flex items-center text-sm text-gray-500 hover:text-purple-600 transition-colors">
-              View more
-              <FiArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
-            </Link>
           </div>
           <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
             {FEATURED_EVENTS.map(event => (
@@ -156,28 +151,20 @@ export default function Home() {
 
         {/* Categories Section */}
         <section className="mb-16">
-          <div className="mb-8 flex items-center justify-between">
+          <div className="mb-8">
             <h2 className="text-3xl font-bold">
               Explore by <span className="text-gray-400">categories</span>
             </h2>
-            <Link href="/categories" className="group flex items-center text-sm text-gray-500 hover:text-purple-600 transition-colors">
-              View more
-              <FiArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
-            </Link>
           </div>
           <Categories />
         </section>
 
         {/* Upcoming Events */}
         <section className="mb-16">
-          <div className="mb-8 flex items-center justify-between">
+          <div className="mb-8">
             <h2 className="text-3xl font-bold">
               Upcoming <span className="text-gray-400">in 24h</span>
             </h2>
-            <Link href="/events/upcoming" className="group flex items-center text-sm text-gray-500 hover:text-purple-600 transition-colors">
-              View more
-              <FiArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
-            </Link>
           </div>
           <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
             {UPCOMING_EVENTS.map(event => (
@@ -220,10 +207,6 @@ export default function Home() {
                   <FiMapPin className="mr-2" />
                   <span>2678 Forest Avenue, San Jose, CA 95111</span>
                 </div>
-                <button className="inline-flex items-center px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium">
-                  Purchase Ticket
-                  <FiArrowRight className="ml-2" />
-                </button>
               </div>
             </div>
           </div>
@@ -231,12 +214,8 @@ export default function Home() {
 
         {/* More Events */}
         <section>
-          <div className="mb-8 flex items-center justify-between">
+          <div className="mb-8">
             <h2 className="text-3xl font-bold">More events</h2>
-            <Link href="/events" className="group flex items-center text-sm text-gray-500 hover:text-purple-600 transition-colors">
-              View more
-              <FiArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
-            </Link>
           </div>
           <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
             {MORE_EVENTS.map(event => (
@@ -249,5 +228,5 @@ export default function Home() {
         </section>
       </div>
     </main>
-  )
+  );
 } 
