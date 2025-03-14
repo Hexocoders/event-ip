@@ -38,7 +38,14 @@ async function getEventData(eventId: string): Promise<EventData | null> {
 export const dynamic = 'force-static';
 export const revalidate = 3600; // Revalidate every hour
 
-export default async function EventPage({ params }: { params: { id: string } }) {
+interface PageProps {
+  params: {
+    id: string;
+  };
+  searchParams: { [key: string]: string | string[] | undefined };
+}
+
+export default async function EventPage({ params, searchParams }: PageProps) {
   const eventData = await getEventData(params.id);
 
   if (!eventData) {
